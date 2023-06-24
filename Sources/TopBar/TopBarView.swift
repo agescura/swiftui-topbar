@@ -1,13 +1,13 @@
 import SwiftUI
 
-struct BarType: Identifiable, Equatable {
+public struct BarType: Identifiable, Equatable {
 	let rawValue: String
 	
 	init(_ text: String) {
 		self.rawValue = text
 	}
 	
-	var id: String { self.rawValue }
+	public var id: String { self.rawValue }
 }
 
 public struct TopBarView: View {
@@ -15,7 +15,7 @@ public struct TopBarView: View {
 	@Binding var selected: BarType
 	@State var barSize: BarSize = .zero
 	
-	init(
+	public init(
 		bars: [BarType],
 		selected: Binding<BarType>
 	) {
