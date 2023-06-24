@@ -1,7 +1,7 @@
 import SwiftUI
 
 public struct BarType: Identifiable, Equatable {
-	let rawValue: String
+	public let rawValue: String
 	
 	public init(_ text: String) {
 		self.rawValue = text
