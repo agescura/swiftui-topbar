@@ -4,41 +4,35 @@ enum CoordinateSpace {
 	case topBar
 }
 
-public struct BarType: Identifiable, Equatable, Hashable {
-	public let rawValue: String
-	
-	public init(_ text: String) {
-		self.rawValue = text
-	}
-	
-	public var id: String { self.rawValue }
-}
-
-public struct TopBarView: View {
-	let bars: [BarType]
-	@Binding var selected: BarType
+public struct TopBarView<Item: Equatable & Hashable, Content: View>: View {
+	let bars: [Item]
+	@Binding var selected: Item
 	@State var barSize: BarSize = .zero
+	let content: (Item) -> Content
 	
 	public init(
-		bars: [BarType],
-		selected: Binding<BarType>
+		bars: [Item],
+		selected: Binding<Item>,
+		content: @escaping (Item) -> Content
 	) {
 		self.bars = bars
 		self._selected = selected
+		self.content = content
 	}
 	
 	public var body: some View {
 		VStack {
 			HStack {
 				Spacer()
-				ForEach(self.bars) { type in
+				ForEach(self.bars, id: \.self) { type in
 					BarView(
 						type: type,
 						selected: self.selected == type,
 						onTap: { barSize in
 							self.selected = type
 							self.barSize = barSize
-						}
+						},
+						content: self.content
 					)
 					Spacer()
 				}
@@ -83,10 +77,11 @@ struct BarGeometryReady: View {
 	}
 }
 
-struct BarView: View {
-	let type: BarType
+struct BarView<Item, Content: View>: View {
+	let type: Item
 	let selected: Bool
 	let onTap: (BarSize) -> Void
+	let content: Content
 	@State private var barSize: BarSize = .zero {
 		didSet {
 			if selected {
@@ -95,15 +90,25 @@ struct BarView: View {
 		}
 	}
 	
+	init(
+		type: Item,
+		selected: Bool,
+		onTap: @escaping (BarSize) -> Void,
+		@ViewBuilder content: (Item) -> Content
+	) {
+		self.type = type
+		self.selected = selected
+		self.onTap = onTap
+		self.content = content(type)
+	}
+	
 	var body: some View {
 		Button {
 			withAnimation {
 				self.onTap(self.barSize)
 			}
 		} label: {
-			Text(self.type.rawValue)
-				.foregroundColor(.black)
-				.lineLimit(1)
+			self.content
 				.background(BarGeometryReady())
 				.onPreferenceChange(SizeKey.self) {
 					self.barSize = $0
@@ -112,8 +117,24 @@ struct BarView: View {
 	}
 }
 
+enum Tab {
+	case home
+	case settings
+	case profile
+	
+	var rawValue: String {
+		switch self {
+			case .home:
+				return "chevron.left"
+			case .settings:
+				return "clock"
+			case .profile:
+				return "chevron.right"
+		}
+	}
+}
 struct TopBarViewPreview: PreviewProvider {
-	@State static var selected: BarType = BarType("Bar Type")
+	@State static var selected: Tab = .home
 	
 	static var previews: some View {
 		
@@ -121,12 +142,16 @@ struct TopBarViewPreview: PreviewProvider {
 			VStack(alignment: .leading, spacing: 32) {
 				TopBarView(
 					bars: [
-						.init("Bar Type 1"),
-						.init("Bar Type"),
-						.init("Bar"),
+						Tab.home,
+						.settings,
+						.profile
 					],
-					selected: $selected
+					selected: $selected,
+					content: { tab in
+						Text(tab.rawValue)
+					}
 				)
+				
 				
 				TabView(selection: $selected) {
 					VStack {
@@ -136,13 +161,13 @@ struct TopBarViewPreview: PreviewProvider {
 					}
 					.frame(maxWidth: .infinity, maxHeight: .infinity)
 					.background(Color.red)
-					.tag(BarType("Bar Type 1"))
+					.tag(Tab.home)
 					Text("Two")
 						.frame(maxWidth: .infinity, maxHeight: .infinity)
-						.tag(BarType("Bar Type"))
+						.tag(Tab.settings)
 					Text("Three")
 						.frame(maxWidth: .infinity, maxHeight: .infinity)
-						.tag(BarType("Bar"))
+						.tag(Tab.profile)
 				}
 				.tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
 			}
