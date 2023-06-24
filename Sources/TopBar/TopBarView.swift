@@ -21,7 +21,8 @@ public struct TopBarView<Item: Equatable & Hashable, Content: View>: View {
 	}
 	
 	public var body: some View {
-		VStack {
+		let _ = print(selected)
+		return VStack {
 			HStack {
 				Spacer()
 				ForEach(self.bars, id: \.self) { type in
@@ -30,6 +31,7 @@ public struct TopBarView<Item: Equatable & Hashable, Content: View>: View {
 						selected: self.selected == type,
 						onTap: { barSize in
 							self.selected = type
+							print("onTap", type)
 							self.barSize = barSize
 						},
 						content: self.content
@@ -125,11 +127,11 @@ enum Tab {
 	var rawValue: String {
 		switch self {
 			case .home:
-				return "chevron.left"
+				return "Laaaaaaargooooo"
 			case .settings:
-				return "clock"
+				return "Sho"
 			case .profile:
-				return "chevron.right"
+				return "Normalito"
 		}
 	}
 }

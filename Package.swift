@@ -5,7 +5,7 @@ import PackageDescription
 let package = Package(
     name: "TopBar",
 	 platforms: [
-		.iOS(.v15)
+		.iOS(.v14)
 	 ],
     products: [
         .library(
@@ -13,6 +13,7 @@ let package = Package(
             targets: ["TopBar"]
 		  ),
     ],
+	 dependencies: [],
     targets: [
         .target(name: "TopBar"),
         .testTarget(
