@@ -1,6 +1,10 @@
 import SwiftUI
 
-public struct BarType: Identifiable, Equatable {
+enum CoordinateSpace {
+	case topBar
+}
+
+public struct BarType: Identifiable, Equatable, Hashable {
 	public let rawValue: String
 	
 	public init(_ text: String) {
@@ -49,6 +53,7 @@ public struct TopBarView: View {
 			}
 		
 		}
+		.coordinateSpace(name: CoordinateSpace.topBar)
 	}
 }
 
@@ -71,7 +76,7 @@ struct BarGeometryReady: View {
 					key: SizeKey.self,
 					value: BarSize(
 						size: geometry.size,
-						origin: geometry.frame(in: .global).origin
+						origin: geometry.frame(in: .named(CoordinateSpace.topBar)).origin
 					)
 				)
 		}
@@ -108,33 +113,40 @@ struct BarView: View {
 }
 
 struct TopBarViewPreview: PreviewProvider {
-	@State static var selected: BarType = BarType("Bar Type") {
-		didSet {
-			print(self.selected)
-		}
-	}
+	@State static var selected: BarType = BarType("Bar Type")
 	
 	static var previews: some View {
 		
 		return NavigationView {
-			ScrollView {
-				VStack(alignment: .leading, spacing: 32) {
-					TopBarView(
-						bars: [
-							.init("Bar Type 1"),
-							.init("Bar Type"),
-							.init("Bar"),
-						],
-						selected: $selected
-					)
-					
-					VStack(alignment: .leading) {
-						ForEach(0..<500) { id in
-							Text("\(id) \(selected.rawValue)")
-						}
+			VStack(alignment: .leading, spacing: 32) {
+				TopBarView(
+					bars: [
+						.init("Bar Type 1"),
+						.init("Bar Type"),
+						.init("Bar"),
+					],
+					selected: $selected
+				)
+				
+				TabView(selection: $selected) {
+					VStack {
+						Text("One")
+						Spacer()
+						Text("One")
 					}
+					.frame(maxWidth: .infinity, maxHeight: .infinity)
+					.background(Color.red)
+					.tag(BarType("Bar Type 1"))
+					Text("Two")
+						.frame(maxWidth: .infinity, maxHeight: .infinity)
+						.tag(BarType("Bar Type"))
+					Text("Three")
+						.frame(maxWidth: .infinity, maxHeight: .infinity)
+						.tag(BarType("Bar"))
 				}
+				.tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
 			}
+			.padding()
 			.navigationTitle("This is a title")
 			.toolbar {
 				ToolbarItem(placement: .cancellationAction) {
