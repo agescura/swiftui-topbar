@@ -1,16 +1,5 @@
 import SwiftUI
 
-struct ScrollGeometryReader: View {
-	var body: some View {
-		GeometryReader {
-			Color.clear.preference(
-				key: ViewOffsetKey.self,
-				value: -$0.frame(in: .named(CoordinateSpace.scroll)).origin.x
-			)
-		}
-	}
-}
-
 struct PagerGeometryReader: View {
 	var body: some View {
 		GeometryReader {

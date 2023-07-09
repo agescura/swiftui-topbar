@@ -10,9 +10,7 @@ struct ScrollModifier: ViewModifier {
 				showsIndicators: false
 			) {
 				content
-					.background(ScrollGeometryReader())
 			}
-			.coordinateSpace(name: CoordinateSpace.scroll)
 		} else {
 			content
 		}

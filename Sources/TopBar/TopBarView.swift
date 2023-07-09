@@ -31,9 +31,9 @@ public struct TopBarView<Item: Equatable & Hashable, Content: View, Separator: V
 	}
 	
 	public var body: some View {
-		VStack {
+		VStack(spacing: 8) {
 			ScrollViewReader { proxy in
-				HStack {
+				HStack(spacing: 0) {
 					Spacer()
 					ForEach(self.bars, id: \.self) { type in
 						BarView(
@@ -55,19 +55,16 @@ public struct TopBarView<Item: Equatable & Hashable, Content: View, Separator: V
 					}
 				}
 			}
-			ZStack(alignment: .leading) {
-				self.separator
-				Color.clear
-					.frame(height: 0)
-				self.underscore
-					.frame(width: self.barSize.width)
-					.offset(x: self.barSize.originX + self.scrollOffset)
-			}
 		}
 		.isScroll(enabled: self.isScrollEnabled)
 		.coordinateSpace(name: CoordinateSpace.topBar)
-		.onPreferenceChange(ViewOffsetKey.self) {
-			self.scrollOffset = $0
+		ZStack(alignment: .leading) {
+			Color.clear
+				.frame(height: 0)
+			self.separator
+			self.underscore
+				.frame(width: self.barSize.width)
+				.offset(x: self.barSize.originX)
 		}
 	}
 }
@@ -106,8 +103,9 @@ struct TopBarViewPreview: PreviewProvider {
 		
 		var body: some View {
 			NavigationView {
-				VStack(alignment: .leading, spacing: 16) {
+				VStack(alignment: .leading, spacing: 8) {
 					TopBarView(
+						isScrollEnabled: true,
 						bars: Tab.allCases,
 						selected: $selected
 					) { tab, selected in
@@ -134,7 +132,6 @@ struct TopBarViewPreview: PreviewProvider {
 				.navigationTitle("Selected: \(self.selected.rawValue)")
 				.navigationBarTitleDisplayMode(.inline)
 			}
-			.previewDisplayName("Separator and Undescore")
 		}
 	}
 	
@@ -143,7 +140,13 @@ struct TopBarViewPreview: PreviewProvider {
 		
 		var body: some View {
 			TabView(selection: $selected) {
-				VStack {}
+				ScrollView {
+					VStack {
+						ForEach(0..<1_000) { id in
+							Text("Index \(id)")
+						}
+					}
+				}
 				.frame(maxWidth: .infinity, maxHeight: .infinity)
 				.background(self.selected.color)
 				.tag(Tab.home)
