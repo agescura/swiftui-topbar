@@ -1,20 +1,19 @@
 import SwiftUI
 
-public struct TopBarView<Item: Equatable & Hashable, Content: View, Separator: View, Underscore: View>: View {
+public struct TopBarView<Data: RandomAccessCollection, Content: View, Separator: View, Underscore: View>: View where Data.Element: Equatable & Hashable {
 	private let isScrollEnabled: Bool
-	private let bars: [Item]
-	@Binding private var selected: Item
+	private let bars: Data
+	@Binding private var selected: Data.Element
+	private let content: (Data.Element, Bool) -> Content
 	@State private var barSize: BarSize = .zero
-	private let content: (Item, Bool) -> Content
 	private let separator: Separator
 	private let underscore: Underscore
-	@State private var scrollOffset: CGFloat = .zero
 	
 	public init(
 		isScrollEnabled: Bool = false,
-		bars: [Item],
-		selected: Binding<Item>,
-		content: @escaping (Item, Bool) -> Content,
+		bars: Data,
+		selected: Binding<Data.Element>,
+		content: @escaping (Data.Element, Bool) -> Content,
 		@ViewBuilder underscore: () -> Underscore = {
 			Capsule()
 				.frame(height: 3)

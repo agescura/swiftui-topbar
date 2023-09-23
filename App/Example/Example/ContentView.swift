@@ -7,30 +7,26 @@ struct ContentView: View {
 	var body: some View {
 		NavigationView {
 			VStack(alignment: .leading, spacing: 8) {
-				TopBarView(
-					isScrollEnabled: true,
-					bars: Tab.allCases,
-					selected: $selected
-				) { tab, selected in
-					HStack {
-						Rectangle()
-							.fill(selected ? self.selected.color : .gray)
-							.frame(width: 10, height: 10)
-							.clipShape(Circle())
-						Text(tab.rawValue)
-							.lineLimit(1)
-							.foregroundColor(selected ? self.selected.color : .gray)
+				MainTopBarView(
+					data: Tab.allCases,
+					selected: self.$selected,
+					content: { item in
+						VStack {}
+							.frame(maxWidth: .infinity, maxHeight: .infinity)
+							.background(item.color)
+					},
+					header: { tab, selected in
+						HStack {
+							Rectangle()
+								.fill(selected ? self.selected.color : .gray)
+								.frame(width: 10, height: 10)
+								.clipShape(Circle())
+							Text(tab.rawValue)
+								.lineLimit(1)
+								.foregroundColor(selected ? self.selected.color : .gray)
+						}
 					}
-				} underscore: {
-					Capsule()
-						.frame(height: 3)
-						.foregroundColor(self.selected.color)
-				} separator: {
-					Divider()
-						.background(self.selected.color.opacity(0.7))
-				}
-				
-				ContentView(selected: self.$selected)
+				)
 			}
 			.navigationTitle("Selected: \(self.selected.rawValue)")
 			.navigationBarTitleDisplayMode(.inline)
@@ -66,7 +62,7 @@ struct ContentView_Previews: PreviewProvider {
 	}
 }
 
-enum Tab: CaseIterable {
+enum Tab: CaseIterable, Identifiable {
 	case home
 	case search
 	case settings
@@ -90,6 +86,66 @@ enum Tab: CaseIterable {
 				return .green
 			case .settings:
 				return .blue
+		}
+	}
+	
+	var id: Self {
+		self
+	}
+}
+
+struct MainTopBarView<
+	Data: Hashable,
+	Content,
+	Header
+>: View where
+Data: RandomAccessCollection,
+Data.Element: Identifiable & Hashable,
+Content: View,
+Header: View
+{
+	private let data: Data
+	@Binding private var selected: Data.Element
+	private let content: (Data.Element) -> Content
+	private let header: (Data.Element, Bool) -> Header
+	
+	public init(
+		data: Data,
+		selected: Binding<Data.Element>,
+		@ViewBuilder content: @escaping (Data.Element) -> Content,
+		@ViewBuilder header: @escaping (Data.Element, Bool) -> Header
+	) {
+		self.data = data
+		self._selected = selected
+		self.header = header
+		self.content = content
+	}
+	
+	var body: some View {
+		VStack {
+			TopBarView(
+				isScrollEnabled: true,
+				bars: self.data,
+				selected: self.$selected
+			) { tab, selected in
+				self.header(tab, selected)
+			} underscore: {
+				Capsule()
+					.frame(height: 3)
+					.foregroundColor(.green)
+			} separator: {
+				Divider()
+					.background(Color.gray.opacity(0.7))
+			}
+			TabView(
+				selection: self.$selected
+			) {
+				ForEach(self.data) { element in
+					self.content(element)
+						.tag(element.id)
+				}
+			}
+			.tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
 		}
 	}
 }
