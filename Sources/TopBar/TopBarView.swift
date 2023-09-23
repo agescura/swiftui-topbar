@@ -1,20 +1,29 @@
 import SwiftUI
 
-public struct TopBarView<Item: Equatable & Hashable, Content: View, Separator: View, Underscore: View>: View {
+public enum ProgressDirection: Equatable {
+	case zero
+	case left(CGFloat)
+	case right(CGFloat)
+}
+
+public struct TopBarView<Data: RandomAccessCollection, Content: View, Separator: View, Underscore: View>: View where Data.Element: Equatable & Hashable {
 	private let isScrollEnabled: Bool
-	private let bars: [Item]
-	@Binding private var selected: Item
-	@State private var barSize: BarSize = .zero
-	private let content: (Item, Bool) -> Content
+	private let bars: Data
+	@Binding private var selected: Data.Element
+	@Binding private var direction: ProgressDirection
+	private let content: (Data.Element, Bool) -> Content
 	private let separator: Separator
 	private let underscore: Underscore
-	@State private var scrollOffset: CGFloat = .zero
+	@State private var barSize: BarSize = .zero
+	
+	@State private var viewFrames: [CGRect]
 	
 	public init(
 		isScrollEnabled: Bool = false,
-		bars: [Item],
-		selected: Binding<Item>,
-		content: @escaping (Item, Bool) -> Content,
+		bars: Data,
+		selected: Binding<Data.Element>,
+		direction: Binding<ProgressDirection>,
+		content: @escaping (Data.Element, Bool) -> Content,
 		@ViewBuilder underscore: () -> Underscore = {
 			Capsule()
 				.frame(height: 3)
@@ -25,9 +34,16 @@ public struct TopBarView<Item: Equatable & Hashable, Content: View, Separator: V
 		self.isScrollEnabled = isScrollEnabled
 		self.bars = bars
 		self._selected = selected
+		self._direction = direction
 		self.content = content
 		self.underscore = underscore()
 		self.separator = separator()
+		self._viewFrames = State(
+			initialValue: Array<CGRect>(
+				repeating: CGRect(),
+				count: self.bars.count
+			)
+		)
 	}
 	
 	public var body: some View {
@@ -35,7 +51,7 @@ public struct TopBarView<Item: Equatable & Hashable, Content: View, Separator: V
 			ScrollViewReader { proxy in
 				HStack(spacing: 0) {
 					Spacer()
-					ForEach(self.bars, id: \.self) { type in
+					ForEach(Array(self.bars.enumerated()), id: \.offset) { index, type in
 						BarView(
 							type: type,
 							selected: self.selected == type,
@@ -46,6 +62,13 @@ public struct TopBarView<Item: Equatable & Hashable, Content: View, Separator: V
 							content: self.content
 						)
 						.id(type)
+						.background(
+							GeometryReader { geometry in
+								Color.clear.onAppear {
+									self.viewFrames[safe: index] = geometry.frame(in: .global)
+								}
+							}
+						)
 						Spacer()
 					}
 				}
@@ -65,6 +88,54 @@ public struct TopBarView<Item: Equatable & Hashable, Content: View, Separator: V
 			self.underscore
 				.frame(width: self.barSize.width)
 				.offset(x: self.barSize.originX)
+		}
+		.onChange(of: self.direction) { direction in
+			guard let index = self.bars.firstIndex(where: { $0 == self.selected }) as? Int
+			else { return }
+			
+			switch direction {
+				case .zero:
+					print("zero")
+					break
+				case let .left(progress):
+					guard self.selected != self.bars.first
+					else {
+						let frame = self.viewFrames[index]
+						withAnimation {
+							print("is first")
+							self.barSize = BarSize(
+								width: frame.width,
+								originX: frame.origin.x
+							)
+						}
+						return
+					}
+					let frames = self.viewFrames[index-1]
+					print("to left")
+					self.barSize = BarSize(
+						width: self.barSize.width - (self.barSize.width - frames.width) * progress / 10.0,
+						originX: self.barSize.originX - (self.barSize.originX - frames.origin.x) * progress / 10.0
+					)
+				case let .right(progress):
+					guard self.selected != self.bars.last
+					else {
+						let frame = self.viewFrames[index]
+						print("is last")
+						withAnimation {
+							self.barSize = BarSize(
+								width: frame.width,
+								originX: frame.origin.x
+							)
+						}
+						return
+					}
+					let frames = self.viewFrames[index+1]
+					print("to right")
+					self.barSize = BarSize(
+						width: self.barSize.width + (frames.width - self.barSize.width) * progress / 10.0,
+						originX: self.barSize.originX + (frames.origin.x - self.barSize.originX) * progress / 10.0
+					)
+			}
 		}
 	}
 }
@@ -107,7 +178,8 @@ struct TopBarViewPreview: PreviewProvider {
 					TopBarView(
 						isScrollEnabled: true,
 						bars: Tab.allCases,
-						selected: $selected
+						selected: $selected,
+						direction: .constant(.zero)
 					) { tab, selected in
 						HStack {
 							Rectangle()
@@ -167,4 +239,24 @@ struct TopBarViewPreview: PreviewProvider {
 	static var previews: some View {
 		MainView()
 	}
+}
+
+extension Collection {
+	 subscript (safe index: Index) -> Element? {
+		  return indices.contains(index) ? self[index] : nil
+	 }
+}
+
+extension MutableCollection {
+	 subscript(safe index: Index) -> Element? {
+		  get {
+				return indices.contains(index) ? self[index] : nil
+		  }
+
+		  set(newValue) {
+				if let newValue = newValue, indices.contains(index) {
+					 self[index] = newValue
+				}
+		  }
+	 }
 }

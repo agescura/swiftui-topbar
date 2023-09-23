@@ -1,6 +1,14 @@
 import Foundation
 
-struct BarSize: Equatable {
-	let width: CGFloat
-	let originX: Double
+public struct BarSize: Equatable {
+	public let width: CGFloat
+	public let originX: Double
+	
+	public init(
+		width: CGFloat,
+		originX: Double
+	) {
+		self.width = width
+		self.originX = originX
+	}
 }

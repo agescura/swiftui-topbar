@@ -11,6 +11,7 @@
 		CE3AE5692A5AE45300BDB6D9 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE3AE5682A5AE45300BDB6D9 /* ContentView.swift */; };
 		CE3AE56B2A5AE45500BDB6D9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CE3AE56A2A5AE45500BDB6D9 /* Assets.xcassets */; };
 		CE3AE56E2A5AE45500BDB6D9 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CE3AE56D2A5AE45500BDB6D9 /* Preview Assets.xcassets */; };
+		CE5E55062AAB7AF000C7ADFD /* TopBar in Frameworks */ = {isa = PBXBuildFile; productRef = CE5E55052AAB7AF000C7ADFD /* TopBar */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,6 +28,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CE5E55062AAB7AF000C7ADFD /* TopBar in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -39,6 +41,7 @@
 				CE3AE5742A5AE45A00BDB6D9 /* swiftui-topbar */,
 				CE3AE5652A5AE45300BDB6D9 /* Example */,
 				CE3AE5642A5AE45300BDB6D9 /* Products */,
+				CE5E55042AAB7AF000C7ADFD /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -69,6 +72,13 @@
 			path = "Preview Content";
 			sourceTree = "<group>";
 		};
+		CE5E55042AAB7AF000C7ADFD /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -85,6 +95,9 @@
 			dependencies = (
 			);
 			name = Example;
+			packageProductDependencies = (
+				CE5E55052AAB7AF000C7ADFD /* TopBar */,
+			);
 			productName = Example;
 			productReference = CE3AE5632A5AE45300BDB6D9 /* Example.app */;
 			productType = "com.apple.product-type.application";
@@ -341,6 +354,13 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		CE5E55052AAB7AF000C7ADFD /* TopBar */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = TopBar;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = CE3AE55B2A5AE45300BDB6D9 /* Project object */;
 }
