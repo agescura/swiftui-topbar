@@ -1,32 +1,30 @@
 import SwiftUI
 import TopBar
 
+extension TopBarView {
+	func topBarStyle(_ modifier: some TopBarModifier) -> some View {
+		self.modifier(modifier)
+	}
+}
+
+protocol TopBarModifier: ViewModifier {}
+
 struct ContentView: View {
 	@State var selected: Tab = .home
 	
 	var body: some View {
 		NavigationView {
 			VStack(alignment: .leading, spacing: 8) {
-				MainTopBarView(
+				TopBarView(
 					data: Tab.allCases,
 					selected: self.$selected,
-					content: { item in
-						VStack {}
-							.frame(maxWidth: .infinity, maxHeight: .infinity)
-							.background(item.color)
-					},
-					header: { tab, selected in
-						HStack {
-							Rectangle()
-								.fill(selected ? self.selected.color : .gray)
-								.frame(width: 10, height: 10)
-								.clipShape(Circle())
-							Text(tab.rawValue)
-								.lineLimit(1)
-								.foregroundColor(selected ? self.selected.color : .gray)
-						}
+					header: { tab in
+						Text(tab.rawValue)
 					}
 				)
+//				.topBarStyle(.defaultValue)
+				.pickerStyle(.inline)
+				Spacer()
 			}
 			.navigationTitle("Selected: \(self.selected.rawValue)")
 			.navigationBarTitleDisplayMode(.inline)
@@ -91,61 +89,5 @@ enum Tab: CaseIterable, Identifiable {
 	
 	var id: Self {
 		self
-	}
-}
-
-struct MainTopBarView<
-	Data: Hashable,
-	Content,
-	Header
->: View where
-Data: RandomAccessCollection,
-Data.Element: Identifiable & Hashable,
-Content: View,
-Header: View
-{
-	private let data: Data
-	@Binding private var selected: Data.Element
-	private let content: (Data.Element) -> Content
-	private let header: (Data.Element, Bool) -> Header
-	
-	public init(
-		data: Data,
-		selected: Binding<Data.Element>,
-		@ViewBuilder content: @escaping (Data.Element) -> Content,
-		@ViewBuilder header: @escaping (Data.Element, Bool) -> Header
-	) {
-		self.data = data
-		self._selected = selected
-		self.header = header
-		self.content = content
-	}
-	
-	var body: some View {
-		VStack {
-			TopBarView(
-				isScrollEnabled: true,
-				bars: self.data,
-				selected: self.$selected
-			) { tab, selected in
-				self.header(tab, selected)
-			} underscore: {
-				Capsule()
-					.frame(height: 3)
-					.foregroundColor(.green)
-			} separator: {
-				Divider()
-					.background(Color.gray.opacity(0.7))
-			}
-			TabView(
-				selection: self.$selected
-			) {
-				ForEach(self.data) { element in
-					self.content(element)
-						.tag(element.id)
-				}
-			}
-			.tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
-		}
 	}
 }
